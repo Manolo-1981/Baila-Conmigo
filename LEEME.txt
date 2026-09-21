@@ -1,0 +1,28 @@
+=====================================
+  BAILA CONMIGO 6
+  Correo: mfvillablancab@gmail.com
+=====================================
+
+Estructura del proyecto:
+
+Archivos principales:
+- index.html           → Página de inicio
+- package.json         → Dependencias
+- vite.config.json     → Configuración Vite
+- tsconfig.json        → Configuración TypeScript
+- .gitignore           → Archivos que NO se suben
+- LEEME.txt            → Este archivo con instrucciones
+
+Carpeta src/:
+- src/components/studio.tsx   → Pantalla principal del estudio
+- src/lib/dances.ts           → Lista de danzas y ritmos
+- src/lib/imagine-video.ts    → Generación de videos con IA
+- src/lib/share.ts            → Compartir en redes sociales
+
+Comandos para usar la app:
+  npm install    → Instala todo lo necesario
+  npm run dev     → Abre la aplicación
+  npm run build   → Prepara para publicar
+
+Creado por: Manolo-1981
+Correo: mfvillablancab@gmail.com
