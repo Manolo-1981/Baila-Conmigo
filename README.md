@@ -1,52 +1,47 @@
-# 💃 BAILA CONMIGO 6 🕺
+# BAILA CONMIGO
 
-> Tu estudio de baile, creación de video y compartir en redes — todo en un solo lugar.
+Aplicación educativa de baile (React + Vite + TypeScript) para practicar pasos, generar prompts de video con Grok Imagine y visualizar animaciones 3D.
 
----
+## Funcionalidades
 
-## 📸 Vista Previa
-<div align="center">
-  <h1 style="font-size: 4rem; letter-spacing: 0.2em; background: linear-gradient(90deg, #ffd700, #ff6b00, #ff0066); -webkit-background-clip: text; color: transparent;">
-    BAILA CONMIGO
-  </h1>
-  <p><em>Versión 6.0 — Creado con ❤️ para ti</em></p>
-</div>
+- **Asistente paso a paso**: Guía completa para generar videos con consistencia de personajes.
+- **Generador de prompts**: Crea prompts optimizados para Grok Imagine (imagen de referencia + video) con soporte para 1 o 2 personajes y fotos de archivo.
+- **Biblioteca de personajes**: Guarda fotos de referencia en el navegador.
+- **Modo práctica**: Metrónomo, lista de pasos, navegación y conteo de tiempos.
+- **Animación 3D**: Escena avanzada con Three.js sincronizada al BPM.
+- **Módulo de salvar**: Descarga de prompts y videos.
 
----
+## Danzas incluidas
 
-## 📁 Estructura del Proyecto
+Salsa, Bachata, Merengue, Cumbia, Tango y Vals (con listas de pasos ampliadas).
 
-| Archivo / Carpeta | ¿Qué hace? |
-|---|---|
-| `index.html` | Página de inicio y presentación |
-| `package.json` | Dependencias y configuración del proyecto |
-| `vite.config.json` | Configuración del servidor de desarrollo |
-| `tsconfig.json` | Configuración de TypeScript |
-| `.gitignore` | Archivos que NO se suben a GitHub |
-| `LEEME.txt` | Instrucciones detalladas |
-| `src/components/studio.tsx` | 🎥 Pantalla principal — Estudio de baile |
-| `src/lib/dances.ts` | 💃 Ritmos, pasos y danzas |
-| `src/lib/imagine-video.ts` | 🎬 Generación de video con IA |
-| `src/lib/share.ts` | 📤 Compartir en redes sociales |
-
----
-
-## 🚀 Cómo ejecutar la app
+## Instalación
 
 ```bash
-# 1. Instalar todo
 npm install
-
-# 2. Abrir en tu navegador
 npm run dev
+```
 
-# 3. Preparar para publicar
-npm run build
+## Flujo recomendado de generación de video
 
-## 👤 Autor
-- **Manolo-1981**
-- 📧 Correo: mfvillablancab@gmail.com
+1. Usa el **Asistente** para seguir los pasos.
+2. Guarda fotos en la **Biblioteca de personajes**.
+3. Ve a **Generar Video**, carga las fotos y genera los prompts.
+4. Genera imagen y video en Grok Imagine.
+5. Anima y sincroniza en Viggle.
+6. Guarda el resultado en la sección **Salvar**.
+
+## Tecnologías
+
+- React 18
+- Vite
+- TypeScript
+- Three.js
+
+## Notas
+
+Los datos (fotos y prompts) se guardan localmente en el navegador (localStorage). No se envían a ningún servidor.
 
 ---
 
-> *"Que el ritmo nunca falte"* 🎶
+> *"Que el ritmo nunca falte"*
