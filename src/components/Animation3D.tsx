@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import * as THREE from 'three'
 import { dances } from '../lib/dances'
 
 export default function Animation3D() {
   const [danzaId, setDanzaId] = useState(dances[0]?.id || '')
   const [activo, setActivo] = useState(false)
   const [bpm, setBpm] = useState(120)
-  const [rotacion, setRotacion] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const sceneRef = useRef<{
+    scene: THREE.Scene
+    camera: THREE.PerspectiveCamera
+    renderer: THREE.WebGLRenderer
+    dancer: THREE.Group
+    clock: THREE.Clock
+  } | null>(null)
 
   const danza = dances.find(d => d.id === danzaId)
 
@@ -14,14 +22,160 @@ export default function Animation3D() {
   }, [danzaId])
 
   useEffect(() => {
-    if (!activo) return
+    if (!containerRef.current) return
 
-    const intervalo = 60000 / bpm
-    const id = window.setInterval(() => {
-      setRotacion(r => r + 15)
-    }, intervalo / 4)
+    const container = containerRef.current
+    const width = container.clientWidth
+    const height = 380
 
-    return () => clearInterval(id)
+    // Escena
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color(0x0f0c29)
+    scene.fog = new THREE.Fog(0x0f0c29, 8, 20)
+
+    // Cámara
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100)
+    camera.position.set(0, 1.6, 5)
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setSize(width, height)
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.shadowMap.enabled = true
+    container.appendChild(renderer.domElement)
+
+    // Luces
+    const ambient = new THREE.AmbientLight(0xffffff, 0.4)
+    scene.add(ambient)
+
+    const dirLight = new THREE.DirectionalLight(0xffd700, 1.2)
+    dirLight.position.set(3, 6, 4)
+    dirLight.castShadow = true
+    scene.add(dirLight)
+
+    const fillLight = new THREE.DirectionalLight(0x4488ff, 0.4)
+    fillLight.position.set(-4, 3, 2)
+    scene.add(fillLight)
+
+    // Suelo
+    const floorGeo = new THREE.PlaneGeometry(12, 12)
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.8 })
+    const floor = new THREE.Mesh(floorGeo, floorMat)
+    floor.rotation.x = -Math.PI / 2
+    floor.receiveShadow = true
+    scene.add(floor)
+
+    // Bailarín 3D (grupo de meshes)
+    const dancer = new THREE.Group()
+
+    // Cabeza
+    const head = new THREE.Mesh(
+      new THREE.SphereGeometry(0.22, 32, 32),
+      new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.4 })
+    )
+    head.position.y = 1.65
+    head.castShadow = true
+    dancer.add(head)
+
+    // Torso
+    const torso = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.28, 0.32, 0.7, 16),
+      new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.5, metalness: 0.2 })
+    )
+    torso.position.y = 1.15
+    torso.castShadow = true
+    dancer.add(torso)
+
+    // Brazos
+    const armMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.5 })
+    const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.55, 12), armMat)
+    leftArm.position.set(-0.45, 1.25, 0)
+    leftArm.rotation.z = 0.3
+    leftArm.castShadow = true
+    dancer.add(leftArm)
+
+    const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.55, 12), armMat)
+    rightArm.position.set(0.45, 1.25, 0)
+    rightArm.rotation.z = -0.3
+    rightArm.castShadow = true
+    dancer.add(rightArm)
+
+    // Piernas
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x222233, roughness: 0.6 })
+    const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.75, 12), legMat)
+    leftLeg.position.set(-0.15, 0.4, 0)
+    leftLeg.castShadow = true
+    dancer.add(leftLeg)
+
+    const rightLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.75, 12), legMat)
+    rightLeg.position.set(0.15, 0.4, 0)
+    rightLeg.castShadow = true
+    dancer.add(rightLeg)
+
+    scene.add(dancer)
+
+    const clock = new THREE.Clock()
+
+    sceneRef.current = { scene, camera, renderer, dancer, clock }
+
+    const handleResize = () => {
+      if (!containerRef.current) return
+      const w = containerRef.current.clientWidth
+      camera.aspect = w / height
+      camera.updateProjectionMatrix()
+      renderer.setSize(w, height)
+    }
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      renderer.dispose()
+      container.removeChild(renderer.domElement)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!sceneRef.current) return
+
+    let frameId: number
+    const { renderer, scene, camera, dancer, clock } = sceneRef.current
+
+    const animate = () => {
+      frameId = requestAnimationFrame(animate)
+
+      if (activo) {
+        const t = clock.getElapsedTime()
+        const speed = bpm / 60
+
+        // Movimiento de baile
+        dancer.rotation.y = Math.sin(t * speed * 0.8) * 0.4
+        dancer.position.y = Math.sin(t * speed * 2) * 0.08
+
+        // Brazos
+        const leftArm = dancer.children[2] as THREE.Mesh
+        const rightArm = dancer.children[3] as THREE.Mesh
+        if (leftArm && rightArm) {
+          leftArm.rotation.z = 0.3 + Math.sin(t * speed * 2) * 0.6
+          rightArm.rotation.z = -0.3 - Math.sin(t * speed * 2) * 0.6
+          leftArm.rotation.x = Math.sin(t * speed * 1.5) * 0.3
+          rightArm.rotation.x = Math.sin(t * speed * 1.5 + Math.PI) * 0.3
+        }
+
+        // Piernas
+        const leftLeg = dancer.children[4] as THREE.Mesh
+        const rightLeg = dancer.children[5] as THREE.Mesh
+        if (leftLeg && rightLeg) {
+          leftLeg.rotation.x = Math.sin(t * speed * 2) * 0.5
+          rightLeg.rotation.x = Math.sin(t * speed * 2 + Math.PI) * 0.5
+        }
+      }
+
+      renderer.render(scene, camera)
+    }
+
+    animate()
+
+    return () => cancelAnimationFrame(frameId)
   }, [activo, bpm])
 
   return (
@@ -33,7 +187,7 @@ export default function Animation3D() {
       borderRadius: '16px',
       border: '1px solid rgba(255,215,0,0.2)'
     }}>
-      <h2 style={{ marginBottom: '1rem', fontSize: '1.4rem' }}>🎭 Animación 3D</h2>
+      <h2 style={{ marginBottom: '1rem', fontSize: '1.4rem' }}>🎭 Animación 3D Avanzada</h2>
 
       <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1.25rem' }}>
         <label>
@@ -58,93 +212,17 @@ export default function Animation3D() {
         </label>
       </div>
 
-      {/* Escena 3D simplificada con CSS transforms */}
-      <div style={{
-        height: '320px',
-        perspective: '1000px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(180deg, #0f0c29, #302b63)',
-        borderRadius: '12px',
-        marginBottom: '1.25rem',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          width: '120px',
-          height: '200px',
-          position: 'relative',
-          transformStyle: 'preserve-3d',
-          transform: `rotateY(${rotacion}deg) rotateX(10deg)`,
-          transition: activo ? 'none' : 'transform 0.3s'
-        }}>
-          {/* Cuerpo */}
-          <div style={{
-            position: 'absolute',
-            width: '60px',
-            height: '90px',
-            background: 'linear-gradient(180deg, #ffd700, #ff6b00)',
-            left: '30px',
-            top: '40px',
-            borderRadius: '8px',
-            transform: 'translateZ(0)'
-          }} />
-          {/* Cabeza */}
-          <div style={{
-            position: 'absolute',
-            width: '40px',
-            height: '40px',
-            background: '#ffdbac',
-            left: '40px',
-            top: '5px',
-            borderRadius: '50%',
-            transform: 'translateZ(10px)'
-          }} />
-          {/* Brazos */}
-          <div style={{
-            position: 'absolute',
-            width: '80px',
-            height: '12px',
-            background: '#ffd700',
-            left: '20px',
-            top: '55px',
-            borderRadius: '6px',
-            transform: `rotateZ(${Math.sin(rotacion * 0.05) * 30}deg) translateZ(5px)`
-          }} />
-          {/* Piernas */}
-          <div style={{
-            position: 'absolute',
-            width: '14px',
-            height: '70px',
-            background: '#333',
-            left: '38px',
-            top: '125px',
-            borderRadius: '4px',
-            transform: `rotateZ(${Math.sin(rotacion * 0.08) * 20}deg)`
-          }} />
-          <div style={{
-            position: 'absolute',
-            width: '14px',
-            height: '70px',
-            background: '#333',
-            left: '68px',
-            top: '125px',
-            borderRadius: '4px',
-            transform: `rotateZ(${Math.sin(rotacion * 0.08 + 1) * 20}deg)`
-          }} />
-        </div>
-
-        <div style={{
-          position: 'absolute',
-          bottom: '12px',
-          left: '12px',
-          fontSize: '0.85rem',
-          opacity: 0.8
-        }}>
-          {danza?.nombre || 'Danza'} • {bpm} BPM
-        </div>
-      </div>
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          height: '380px',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          marginBottom: '1.25rem',
+          background: '#0f0c29'
+        }}
+      />
 
       <button
         onClick={() => setActivo(a => !a)}
@@ -158,7 +236,8 @@ export default function Animation3D() {
       </button>
 
       <p style={{ marginTop: '1rem', fontSize: '0.85rem', opacity: 0.75 }}>
-        Visualización 3D simplificada sincronizada al BPM. Ideal para practicar ritmo mientras se generan videos en Grok Imagine.
+        Escena 3D con Three.js: iluminación, sombras y movimiento de baile sincronizado al BPM.
+        {danza && ` Danza actual: ${danza.nombre}.`}
       </p>
     </div>
   )
