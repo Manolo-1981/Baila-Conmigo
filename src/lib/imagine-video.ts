@@ -10,8 +10,9 @@ export interface VideoPromptConfig {
 }
 
 export interface PromptGenerado {
-  promptPrincipal: string
-  promptCorto: string
+  promptImagenReferencia: string
+  promptVideo: string
+  promptVideoCorto: string
   parametrosSugeridos: {
     duracion: string
     estilo: string
@@ -21,20 +22,29 @@ export interface PromptGenerado {
 }
 
 /**
- * Genera prompts optimizados para Grok Imagine (o herramientas similares)
+ * Genera prompts optimizados para Grok Imagine (imagen de referencia + video)
  * orientados a videos educativos/creativos de baile.
  */
 export function generarPromptVideo(config: VideoPromptConfig): PromptGenerado {
   const pasosTexto = config.pasos && config.pasos.length > 0
-    ? config.pasos.join(', ')
+    ? config.pasos.slice(0, 6).join(', ') + (config.pasos.length > 6 ? ' y otros pasos característicos' : '')
     : 'pasos básicos fluidos y precisos'
 
   const personaje = config.personaje || 'pareja de bailarines latinos adultos, vestimenta elegante y apropiada para el baile'
   const ambiente = config.ambiente || 'estudio de baile moderno con iluminación cálida y cinemática'
   const musica = config.musica || `ritmo de ${config.danza} a tempo medio`
 
-  const promptPrincipal = [
+  const promptImagenReferencia = [
+    `Retrato cinemático de ${personaje}, posando en ${ambiente}.`,
+    `Estilo: ${config.estiloVisual}, iluminación profesional, colores realistas y vibrantes.`,
+    `Vestimenta apropiada para baile de ${config.danza}, expresión natural y segura.`,
+    `Alta calidad, detalle en rostros, manos y postura, fondo ligeramente desenfocado.`,
+    `Ideal como imagen de referencia para generar video consistente en Grok Imagine.`
+  ].join(' ')
+
+  const promptVideo = [
     `Video cinemático de baile de ${config.danza}, duración ${config.duracionSegundos} segundos.`,
+    `Usa como referencia la imagen del personaje generada previamente para mantener consistencia de rostros, vestimenta y estilo.`,
     `Personajes: ${personaje}.`,
     `Movimientos: ${pasosTexto}, ejecutados con técnica clara, fluidez y expresión natural.`,
     `Estilo visual: ${config.estiloVisual}, iluminación profesional, colores vibrantes pero realistas.`,
@@ -45,22 +55,23 @@ export function generarPromptVideo(config: VideoPromptConfig): PromptGenerado {
     `Enfoque educativo: que se aprecien claramente los pasos y la conexión entre los bailarines.`
   ].join(' ')
 
-  const promptCorto = `Video cinemático de ${config.danza}: ${personaje} realizando ${pasosTexto} en ${ambiente}, estilo ${config.estiloVisual}, ${config.duracionSegundos}s, movimientos fluidos y técnicamente claros.`
+  const promptVideoCorto = `Video cinemático de ${config.danza} (${config.duracionSegundos}s): ${personaje} realizando ${pasosTexto} en ${ambiente}, estilo ${config.estiloVisual}. Usa imagen de referencia para consistencia.`
 
   return {
-    promptPrincipal,
-    promptCorto,
+    promptImagenReferencia,
+    promptVideo,
+    promptVideoCorto,
     parametrosSugeridos: {
       duracion: `${config.duracionSegundos}s`,
       estilo: config.estiloVisual,
-      relacionAspecto: '9:16 (vertical para Reels/TikTok) o 16:9'
+      relacionAspecto: '9:16 (Reels/TikTok) o 16:9'
     },
-    instruccionesUso: 'Copia el prompt principal y pégalo en Grok Imagine (modo video). Ajusta duración y relación de aspecto según la plataforma de destino. Para consistencia de personaje, genera primero una imagen de referencia y úsala como base.'
+    instruccionesUso: '1) Copia el prompt de imagen y genérala en Grok Imagine (modo imagen). 2) Usa esa imagen como referencia. 3) Copia el prompt de video y genéralo en modo video. Ajusta duración y relación de aspecto según necesites.'
   }
 }
 
 export function generarPromptsPorPasos(danza: string, pasos: string[], estiloVisual = 'cinemático realista'): PromptGenerado[] {
-  return pasos.map((paso, index) =>
+  return pasos.map((paso) =>
     generarPromptVideo({
       danza,
       pasos: [paso],
@@ -74,13 +85,14 @@ export function generarPromptsPorPasos(danza: string, pasos: string[], estiloVis
 
 export async function generarVideo(config: VideoPromptConfig) {
   const prompt = generarPromptVideo(config)
-  console.log('🎬 Prompt generado:', prompt.promptCorto)
+  console.log('🎬 Prompt de video generado:', prompt.promptVideoCorto)
   return {
-    estado: 'prompt_listo',
-    prompt: prompt.promptPrincipal,
-    promptCorto: prompt.promptCorto,
+    estado: 'prompts_listos',
+    promptImagen: prompt.promptImagenReferencia,
+    promptVideo: prompt.promptVideo,
+    promptCorto: prompt.promptVideoCorto,
     duracion: config.duracionSegundos,
-    formato: 'prompt_para_Grok_Imagine',
+    formato: 'Grok_Imagine',
     instrucciones: prompt.instruccionesUso
   }
 }
