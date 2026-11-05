@@ -38,14 +38,46 @@ export const dances: Danza[] = [
   {
     id: 'tango',
     nombre: 'Tango',
-    pasos: ['Salida básica', 'Ocho', 'Giro', 'Corte', 'Abrazo cerrado'],
+    pasos: [
+      'Salida básica',
+      'Abrazo cerrado',
+      'Ocho adelante',
+      'Ocho atrás',
+      'Giro (molinete)',
+      'Corte',
+      'Sacada',
+      'Boleo',
+      'Gancho',
+      'Parada',
+      'Barrida',
+      'Caminata hacia adelante',
+      'Caminata hacia atrás',
+      'Cambio de peso',
+      'Pausa (parada en el abrazo)'
+    ],
     velocidad: 120,
     categoria: 'Rioplatense'
   },
   {
     id: 'vals',
     nombre: 'Vals',
-    pasos: ['Paso básico 1-2-3', 'Giro a la derecha', 'Giro a la izquierda', 'Cambio de dirección', 'Balanceo'],
+    pasos: [
+      'Paso básico 1-2-3',
+      'Giro natural (a la derecha)',
+      'Giro reverso (a la izquierda)',
+      'Cambio de dirección',
+      'Balanceo',
+      'Chassé',
+      'Paso de caja',
+      'Vuelta completa',
+      'Paso abierto',
+      'Paso cerrado',
+      'Giro bajo el brazo',
+      'Promenade',
+      'Corte lateral',
+      'Paso de avance',
+      'Paso de retroceso'
+    ],
     velocidad: 90,
     categoria: 'Clásico / Europeo'
   }
