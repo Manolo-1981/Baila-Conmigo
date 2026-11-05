@@ -14,6 +14,9 @@ export default function VideoGenerator() {
   const [danzaId, setDanzaId] = useState(dances[0]?.id || '')
   const [estilo, setEstilo] = useState(estilos[0])
   const [duracion, setDuracion] = useState(10)
+  const [numeroPersonajes, setNumeroPersonajes] = useState<1 | 2>(2)
+  const [descripcionPersonaje, setDescripcionPersonaje] = useState('')
+  const [relacionAspecto, setRelacionAspecto] = useState<'9:16' | '16:9' | '1:1'>('9:16')
   const [resultado, setResultado] = useState<ReturnType<typeof generarPromptVideo> | null>(null)
   const [copiado, setCopiado] = useState<'imagen' | 'video' | null>(null)
 
@@ -26,9 +29,11 @@ export default function VideoGenerator() {
       danza: danzaSeleccionada.nombre,
       pasos: danzaSeleccionada.pasos,
       estiloVisual: estilo,
+      numeroPersonajes,
+      descripcionPersonaje: descripcionPersonaje.trim() || undefined,
       duracionSegundos: duracion,
-      ambiente: 'estudio de baile moderno con iluminación profesional',
-      personaje: 'pareja de bailarines adultos latinos, vestimenta elegante y apropiada'
+      relacionAspecto,
+      ambiente: 'estudio de baile moderno con iluminación profesional'
     }
 
     setResultado(generarPromptVideo(config))
@@ -67,9 +72,47 @@ export default function VideoGenerator() {
         </label>
 
         <label>
+          Número de personajes
+          <select
+            value={numeroPersonajes}
+            onChange={e => setNumeroPersonajes(Number(e.target.value) as 1 | 2)}
+            style={selectStyle}
+          >
+            <option value={1}>1 personaje (solo)</option>
+            <option value={2}>2 personajes (pareja)</option>
+          </select>
+        </label>
+
+        <label>
+          Descripción del personaje (opcional)
+          <input
+            type="text"
+            value={descripcionPersonaje}
+            onChange={e => setDescripcionPersonaje(e.target.value)}
+            placeholder={numeroPersonajes === 1
+              ? 'Ej: hombre adulto con barba, vestido de negro...'
+              : 'Ej: pareja elegante, él con traje y ella con vestido rojo...'}
+            style={selectStyle}
+          />
+        </label>
+
+        <label>
           Estilo visual
           <select value={estilo} onChange={e => setEstilo(e.target.value)} style={selectStyle}>
             {estilos.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </label>
+
+        <label>
+          Relación de aspecto
+          <select
+            value={relacionAspecto}
+            onChange={e => setRelacionAspecto(e.target.value as '9:16' | '16:9' | '1:1')}
+            style={selectStyle}
+          >
+            <option value="9:16">9:16 (Reels / TikTok / vertical)</option>
+            <option value="16:9">16:9 (horizontal / YouTube)</option>
+            <option value="1:1">1:1 (cuadrado)</option>
           </select>
         </label>
 
@@ -92,6 +135,10 @@ export default function VideoGenerator() {
 
       {resultado && (
         <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
+          <p style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '0.75rem' }}>
+            Configuración: {resultado.parametrosSugeridos.personajes} • {resultado.parametrosSugeridos.relacionAspecto}
+          </p>
+
           <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>1. Prompt de imagen de referencia</h3>
           <textarea
             readOnly
@@ -120,7 +167,7 @@ export default function VideoGenerator() {
               <li>Copia el prompt de imagen y genérala en <strong>Grok Imagine</strong> (modo imagen).</li>
               <li>Usa la imagen generada como referencia para el video.</li>
               <li>Copia el prompt de video y genéralo en modo video.</li>
-              <li>Ajusta duración y relación de aspecto (9:16 o 16:9).</li>
+              <li>Ajusta duración y relación de aspecto si es necesario.</li>
             </ol>
             <button onClick={abrirGrokImagine} style={{ ...botonStyle, marginTop: '0.75rem', fontSize: '0.9rem' }}>
               Abrir grok.com
