@@ -7,9 +7,10 @@ export default function PracticeMode() {
   const [activo, setActivo] = useState(false)
   const [bpm, setBpm] = useState(dances[0]?.velocidad || 120)
   const [contador, setContador] = useState(0)
+  const [beat, setBeat] = useState(1)
+  const [pulsando, setPulsando] = useState(false)
 
   const intervalRef = useRef<number | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const danza = dances.find(d => d.id === danzaId)
 
@@ -25,7 +26,9 @@ export default function PracticeMode() {
       const intervalo = 60000 / bpm
       intervalRef.current = window.setInterval(() => {
         setContador(c => c + 1)
-        // Click de metrónomo simple (usando Web Audio API si es posible, o fallback)
+        setBeat(b => (b % 4) + 1)
+        setPulsando(true)
+        setTimeout(() => setPulsando(false), 120)
         reproducirClick()
       }, intervalo)
     } else {
@@ -53,13 +56,16 @@ export default function PracticeMode() {
       osc.start(ctx.currentTime)
       osc.stop(ctx.currentTime + 0.1)
     } catch {
-      // Silencioso si no hay soporte de audio
+      // Silencioso
     }
   }
 
   function toggleMetronomo() {
     setActivo(a => !a)
-    if (!activo) setContador(0)
+    if (!activo) {
+      setContador(0)
+      setBeat(1)
+    }
   }
 
   function siguientePaso() {
@@ -141,8 +147,26 @@ export default function PracticeMode() {
         </button>
 
         {activo && (
-          <div style={{ marginTop: '1rem', fontSize: '2rem', fontWeight: 'bold' }}>
-            {contador}
+          <div style={{ marginTop: '1.25rem' }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              margin: '0 auto 0.75rem',
+              background: pulsando ? 'rgba(255,215,0,0.8)' : 'rgba(255,215,0,0.2)',
+              border: '3px solid #ffd700',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              transition: 'all 0.1s'
+            }}>
+              {beat}
+            </div>
+            <div style={{ fontSize: '1.2rem', opacity: 0.8 }}>
+              Pulsos: {contador}
+            </div>
           </div>
         )}
       </div>
