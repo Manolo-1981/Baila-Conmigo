@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, ChangeEvent } from 'react'
 import { dances } from '../lib/dances'
 import { generarPromptVideo, type VideoPromptConfig } from '../lib/imagine-video'
 
@@ -10,6 +10,12 @@ const estilos = [
   'UGC / estilo iPhone'
 ]
 
+interface FotoReferencia {
+  file: File
+  preview: string
+  nombre: string
+}
+
 export default function VideoGenerator() {
   const [danzaId, setDanzaId] = useState(dances[0]?.id || '')
   const [estilo, setEstilo] = useState(estilos[0])
@@ -17,10 +23,30 @@ export default function VideoGenerator() {
   const [numeroPersonajes, setNumeroPersonajes] = useState<1 | 2>(2)
   const [descripcionPersonaje, setDescripcionPersonaje] = useState('')
   const [relacionAspecto, setRelacionAspecto] = useState<'9:16' | '16:9' | '1:1'>('9:16')
+  const [fotos, setFotos] = useState<FotoReferencia[]>([])
   const [resultado, setResultado] = useState<ReturnType<typeof generarPromptVideo> | null>(null)
   const [copiado, setCopiado] = useState<'imagen' | 'video' | 'animacion' | null>(null)
 
   const danzaSeleccionada = dances.find(d => d.id === danzaId)
+
+  function manejarCargaFotos(e: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    const maxFotos = numeroPersonajes
+    const seleccionadas = files.slice(0, maxFotos)
+
+    const nuevas: FotoReferencia[] = seleccionadas.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      nombre: file.name
+    }))
+
+    setFotos(nuevas)
+  }
+
+  function limpiarFotos() {
+    fotos.forEach(f => URL.revokeObjectURL(f.preview))
+    setFotos([])
+  }
 
   function generar() {
     if (!danzaSeleccionada) return
@@ -33,7 +59,9 @@ export default function VideoGenerator() {
       descripcionPersonaje: descripcionPersonaje.trim() || undefined,
       duracionSegundos: duracion,
       relacionAspecto,
-      ambiente: 'estudio de baile moderno con iluminación profesional'
+      ambiente: 'estudio de baile moderno con iluminación profesional',
+      tieneFotosReferencia: fotos.length > 0,
+      nombresFotos: fotos.map(f => f.nombre)
     }
 
     setResultado(generarPromptVideo(config))
@@ -79,13 +107,50 @@ export default function VideoGenerator() {
           Número de personajes
           <select
             value={numeroPersonajes}
-            onChange={e => setNumeroPersonajes(Number(e.target.value) as 1 | 2)}
+            onChange={e => {
+              const n = Number(e.target.value) as 1 | 2
+              setNumeroPersonajes(n)
+              if (fotos.length > n) {
+                setFotos(fotos.slice(0, n))
+              }
+            }}
             style={selectStyle}
           >
             <option value={1}>1 personaje (solo)</option>
             <option value={2}>2 personajes (pareja)</option>
           </select>
         </label>
+
+        <label>
+          Fotos de referencia del archivo (hasta {numeroPersonajes})
+          <input
+            type="file"
+            accept="image/*"
+            multiple={numeroPersonajes === 2}
+            onChange={manejarCargaFotos}
+            style={{ ...selectStyle, padding: '0.4rem' }}
+          />
+        </label>
+
+        {fotos.length > 0 && (
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {fotos.map((f, i) => (
+              <div key={i} style={{ textAlign: 'center' }}>
+                <img
+                  src={f.preview}
+                  alt={f.nombre}
+                  style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px', border: '2px solid rgba(255,215,0,0.4)' }}
+                />
+                <div style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '0.25rem', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {f.nombre}
+                </div>
+              </div>
+            ))}
+            <button onClick={limpiarFotos} style={{ ...botonStyle, padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+              Limpiar fotos
+            </button>
+          </div>
+        )}
 
         <label>
           Descripción del personaje (opcional)
@@ -141,6 +206,7 @@ export default function VideoGenerator() {
         <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
           <p style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '0.75rem' }}>
             Configuración: {resultado.parametrosSugeridos.personajes} • {resultado.parametrosSugeridos.relacionAspecto}
+            {fotos.length > 0 && ` • ${fotos.length} foto(s) de archivo cargada(s)`}
           </p>
 
           <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>1. Prompt de imagen de referencia</h3>
@@ -164,9 +230,10 @@ export default function VideoGenerator() {
           <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(255,215,0,0.08)', borderRadius: '8px', fontSize: '0.9rem' }}>
             <strong>Flujo recomendado:</strong>
             <ol style={{ margin: '0.5rem 0 0 1.2rem', padding: 0 }}>
-              <li>Genera la imagen de referencia en Grok Imagine.</li>
-              <li>Genera el video usando esa imagen como referencia.</li>
-              <li>Usa Viggle (u otra herramienta de motion transfer) con un video real de baile para animar y sincronizar con la música.</li>
+              <li>Carga tus fotos de archivo (1 o 2 según el número de personajes).</li>
+              <li>Copia el prompt de imagen y genérala en Grok Imagine, usando las fotos subidas como referencia.</li>
+              <li>Genera el video usando la imagen generada.</li>
+              <li>Usa Viggle (u otra herramienta) para transferir movimiento de un video real de baile y sincronizar con la música.</li>
             </ol>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
               <button onClick={abrirGrokImagine} style={{ ...botonStyle, fontSize: '0.9rem' }}>
