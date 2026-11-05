@@ -18,7 +18,7 @@ export default function VideoGenerator() {
   const [descripcionPersonaje, setDescripcionPersonaje] = useState('')
   const [relacionAspecto, setRelacionAspecto] = useState<'9:16' | '16:9' | '1:1'>('9:16')
   const [resultado, setResultado] = useState<ReturnType<typeof generarPromptVideo> | null>(null)
-  const [copiado, setCopiado] = useState<'imagen' | 'video' | null>(null)
+  const [copiado, setCopiado] = useState<'imagen' | 'video' | 'animacion' | null>(null)
 
   const danzaSeleccionada = dances.find(d => d.id === danzaId)
 
@@ -40,7 +40,7 @@ export default function VideoGenerator() {
     setCopiado(null)
   }
 
-  async function copiar(texto: string, tipo: 'imagen' | 'video') {
+  async function copiar(texto: string, tipo: 'imagen' | 'video' | 'animacion') {
     await navigator.clipboard.writeText(texto)
     setCopiado(tipo)
     setTimeout(() => setCopiado(null), 2000)
@@ -48,6 +48,10 @@ export default function VideoGenerator() {
 
   function abrirGrokImagine() {
     window.open('https://grok.com', '_blank')
+  }
+
+  function abrirViggle() {
+    window.open('https://viggle.ai', '_blank')
   }
 
   return (
@@ -130,7 +134,7 @@ export default function VideoGenerator() {
       </div>
 
       <button onClick={generar} style={botonStyle}>
-        Generar prompts (imagen + video)
+        Generar prompts (imagen + video + animación)
       </button>
 
       {resultado && (
@@ -140,38 +144,38 @@ export default function VideoGenerator() {
           </p>
 
           <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>1. Prompt de imagen de referencia</h3>
-          <textarea
-            readOnly
-            value={resultado.promptImagenReferencia}
-            rows={5}
-            style={textareaStyle}
-          />
+          <textarea readOnly value={resultado.promptImagenReferencia} rows={5} style={textareaStyle} />
           <button onClick={() => copiar(resultado.promptImagenReferencia, 'imagen')} style={{ ...botonStyle, marginTop: '0.4rem' }}>
             {copiado === 'imagen' ? '✅ Copiado' : '📋 Copiar prompt de imagen'}
           </button>
 
           <h3 style={{ fontSize: '1.1rem', margin: '1.25rem 0 0.5rem' }}>2. Prompt de video</h3>
-          <textarea
-            readOnly
-            value={resultado.promptVideo}
-            rows={8}
-            style={textareaStyle}
-          />
+          <textarea readOnly value={resultado.promptVideo} rows={8} style={textareaStyle} />
           <button onClick={() => copiar(resultado.promptVideo, 'video')} style={{ ...botonStyle, marginTop: '0.4rem' }}>
             {copiado === 'video' ? '✅ Copiado' : '📋 Copiar prompt de video'}
           </button>
 
+          <h3 style={{ fontSize: '1.1rem', margin: '1.25rem 0 0.5rem' }}>3. Animación y sincronización</h3>
+          <textarea readOnly value={resultado.instruccionesAnimacion} rows={10} style={textareaStyle} />
+          <button onClick={() => copiar(resultado.instruccionesAnimacion, 'animacion')} style={{ ...botonStyle, marginTop: '0.4rem' }}>
+            {copiado === 'animacion' ? '✅ Copiado' : '📋 Copiar instrucciones de animación'}
+          </button>
+
           <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(255,215,0,0.08)', borderRadius: '8px', fontSize: '0.9rem' }}>
-            <strong>Cómo usarlo en Grok Imagine:</strong>
+            <strong>Flujo recomendado:</strong>
             <ol style={{ margin: '0.5rem 0 0 1.2rem', padding: 0 }}>
-              <li>Copia el prompt de imagen y genérala en <strong>Grok Imagine</strong> (modo imagen).</li>
-              <li>Usa la imagen generada como referencia para el video.</li>
-              <li>Copia el prompt de video y genéralo en modo video.</li>
-              <li>Ajusta duración y relación de aspecto si es necesario.</li>
+              <li>Genera la imagen de referencia en Grok Imagine.</li>
+              <li>Genera el video usando esa imagen como referencia.</li>
+              <li>Usa Viggle (u otra herramienta de motion transfer) con un video real de baile para animar y sincronizar con la música.</li>
             </ol>
-            <button onClick={abrirGrokImagine} style={{ ...botonStyle, marginTop: '0.75rem', fontSize: '0.9rem' }}>
-              Abrir grok.com
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+              <button onClick={abrirGrokImagine} style={{ ...botonStyle, fontSize: '0.9rem' }}>
+                Abrir Grok
+              </button>
+              <button onClick={abrirViggle} style={{ ...botonStyle, fontSize: '0.9rem' }}>
+                Abrir Viggle
+              </button>
+            </div>
           </div>
         </div>
       )}
