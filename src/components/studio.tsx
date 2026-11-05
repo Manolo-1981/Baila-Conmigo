@@ -1,10 +1,10 @@
 // Pantalla principal: Estudio de Baile
 import { useState } from 'react'
 import VideoGenerator from './VideoGenerator'
+import PracticeMode from './PracticeMode'
 
 export default function Studio() {
-  const [activo, setActivo] = useState(false)
-  const [seccion, setSeccion] = useState<'estudio' | 'video'>('estudio')
+  const [seccion, setSeccion] = useState<'estudio' | 'video' | 'practica'>('estudio')
 
   return (
     <div style={{
@@ -31,18 +31,25 @@ export default function Studio() {
         <button onClick={() => setSeccion('estudio')} style={botonNav(seccion === 'estudio')}>
           🎥 Estudio
         </button>
+        <button onClick={() => setSeccion('practica')} style={botonNav(seccion === 'practica')}>
+          💃 Práctica
+        </button>
         <button onClick={() => setSeccion('video')} style={botonNav(seccion === 'video')}>
           🎬 Generar Video
-        </button>
-        <button onClick={() => setActivo(!activo)} style={botonNav(activo)}>
-          {activo ? 'Detener' : 'Iniciar'} Estudio
         </button>
       </div>
 
       {seccion === 'video' && <VideoGenerator />}
+      {seccion === 'practica' && <PracticeMode />}
 
-      {seccion === 'estudio' && activo && (
-        <p style={{ opacity: 0.7 }}>Estudio activo — aquí irá la práctica de pasos y metrónomo.</p>
+      {seccion === 'estudio' && (
+        <div style={{ opacity: 0.75, maxWidth: '600px', margin: '0 auto' }}>
+          <p>Selecciona una sección:</p>
+          <ul style={{ textAlign: 'left', marginTop: '1rem' }}>
+            <li><strong>Práctica</strong>: Metrónomo y pasos para entrenar.</li>
+            <li><strong>Generar Video</strong>: Crea prompts para Grok Imagine con fotos de referencia.</li>
+          </ul>
+        </div>
       )}
     </div>
   )
