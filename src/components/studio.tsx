@@ -1,8 +1,10 @@
 // Pantalla principal: Estudio de Baile
 import { useState } from 'react'
+import VideoGenerator from './VideoGenerator'
 
 export default function Studio() {
   const [activo, setActivo] = useState(false)
+  const [seccion, setSeccion] = useState<'estudio' | 'video'>('estudio')
 
   return (
     <div style={{
@@ -24,20 +26,36 @@ export default function Studio() {
       <p style={{ opacity: 0.8, marginBottom: '2rem' }}>
         Tu estudio de creación y baile en vivo
       </p>
-      
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-        <button onClick={() => setActivo(!activo)} style={{
-          padding: '1rem 2rem',
-          background: activo ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)',
-          border: '2px solid rgba(255,215,0,0.5)',
-          borderRadius: '12px',
-          color: 'white',
-          fontSize: '1rem',
-          cursor: 'pointer'
-        }}>
-          🎬 {activo ? 'Detener' : 'Iniciar'} Estudio
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
+        <button onClick={() => setSeccion('estudio')} style={botonNav(seccion === 'estudio')}>
+          🎥 Estudio
+        </button>
+        <button onClick={() => setSeccion('video')} style={botonNav(seccion === 'video')}>
+          🎬 Generar Video
+        </button>
+        <button onClick={() => setActivo(!activo)} style={botonNav(activo)}>
+          {activo ? 'Detener' : 'Iniciar'} Estudio
         </button>
       </div>
+
+      {seccion === 'video' && <VideoGenerator />}
+
+      {seccion === 'estudio' && activo && (
+        <p style={{ opacity: 0.7 }}>Estudio activo — aquí irá la práctica de pasos y metrónomo.</p>
+      )}
     </div>
   )
+}
+
+function botonNav(activo: boolean): React.CSSProperties {
+  return {
+    padding: '0.75rem 1.5rem',
+    background: activo ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)',
+    border: '2px solid rgba(255,215,0,0.5)',
+    borderRadius: '12px',
+    color: 'white',
+    fontSize: '1rem',
+    cursor: 'pointer'
+  }
 }
