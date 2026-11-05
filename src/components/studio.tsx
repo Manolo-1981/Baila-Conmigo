@@ -2,9 +2,11 @@
 import { useState } from 'react'
 import VideoGenerator from './VideoGenerator'
 import PracticeMode from './PracticeMode'
+import Animation3D from './Animation3D'
+import SaveModule from './SaveModule'
 
 export default function Studio() {
-  const [seccion, setSeccion] = useState<'estudio' | 'video' | 'practica'>('estudio')
+  const [seccion, setSeccion] = useState<'estudio' | 'video' | 'practica' | 'animacion' | 'salvar'>('estudio')
 
   return (
     <div style={{
@@ -34,20 +36,30 @@ export default function Studio() {
         <button onClick={() => setSeccion('practica')} style={botonNav(seccion === 'practica')}>
           💃 Práctica
         </button>
+        <button onClick={() => setSeccion('animacion')} style={botonNav(seccion === 'animacion')}>
+          🎭 Animación 3D
+        </button>
         <button onClick={() => setSeccion('video')} style={botonNav(seccion === 'video')}>
           🎬 Generar Video
+        </button>
+        <button onClick={() => setSeccion('salvar')} style={botonNav(seccion === 'salvar')}>
+          💾 Salvar
         </button>
       </div>
 
       {seccion === 'video' && <VideoGenerator />}
       {seccion === 'practica' && <PracticeMode />}
+      {seccion === 'animacion' && <Animation3D />}
+      {seccion === 'salvar' && <SaveModule />}
 
       {seccion === 'estudio' && (
-        <div style={{ opacity: 0.75, maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ opacity: 0.75, maxWidth: '640px', margin: '0 auto' }}>
           <p>Selecciona una sección:</p>
           <ul style={{ textAlign: 'left', marginTop: '1rem' }}>
             <li><strong>Práctica</strong>: Metrónomo y pasos para entrenar.</li>
-            <li><strong>Generar Video</strong>: Crea prompts para Grok Imagine con fotos de referencia.</li>
+            <li><strong>Animación 3D</strong>: Visualización animada sincronizada al ritmo.</li>
+            <li><strong>Generar Video</strong>: Prompts para Grok Imagine con fotos de referencia.</li>
+            <li><strong>Salvar</strong>: Descarga prompts y videos generados.</li>
           </ul>
         </div>
       )}
