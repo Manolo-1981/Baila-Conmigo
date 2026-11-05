@@ -34,6 +34,20 @@ export const dances: Danza[] = [
     pasos: ['Paso al frente', 'Paso atrás', 'Giro suave'],
     velocidad: 150,
     categoria: 'Latinoamericana'
+  },
+  {
+    id: 'tango',
+    nombre: 'Tango',
+    pasos: ['Salida básica', 'Ocho', 'Giro', 'Corte', 'Abrazo cerrado'],
+    velocidad: 120,
+    categoria: 'Rioplatense'
+  },
+  {
+    id: 'vals',
+    nombre: 'Vals',
+    pasos: ['Paso básico 1-2-3', 'Giro a la derecha', 'Giro a la izquierda', 'Cambio de dirección', 'Balanceo'],
+    velocidad: 90,
+    categoria: 'Clásico / Europeo'
   }
 ]
 
