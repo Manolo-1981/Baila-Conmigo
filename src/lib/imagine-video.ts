@@ -14,6 +14,7 @@ export interface PromptGenerado {
   promptImagenReferencia: string
   promptVideo: string
   promptVideoCorto: string
+  instruccionesAnimacion: string
   parametrosSugeridos: {
     duracion: string
     estilo: string
@@ -33,7 +34,7 @@ function construirDescripcionPersonaje(numero: 1 | 2, custom?: string): string {
 }
 
 /**
- * Genera prompts optimizados para Grok Imagine (imagen de referencia + video)
+ * Genera prompts optimizados para Grok Imagine (imagen + video) + instrucciones de animación/sincronización.
  * Soporta 1 o 2 personajes.
  */
 export function generarPromptVideo(config: VideoPromptConfig): PromptGenerado {
@@ -73,17 +74,29 @@ export function generarPromptVideo(config: VideoPromptConfig): PromptGenerado {
 
   const promptVideoCorto = `Video cinemático de ${config.danza} (${config.duracionSegundos}s, ${aspecto}): ${personaje} realizando ${pasosTexto} en ${ambiente}, estilo ${config.estiloVisual}. Usa imagen de referencia para consistencia.`
 
+  const instruccionesAnimacion = [
+    `Paso 3 – Animación y sincronización (recomendado con Viggle AI, Seedance u herramienta similar de motion transfer):`,
+    `1. Toma el video generado en Grok Imagine (o la imagen de referencia si prefieres partir de estática).`,
+    `2. Sube un video de referencia de baile real de ${config.danza} (puede ser corto, de 5-15 segundos) que tenga los movimientos que deseas.`,
+    `3. Usa la función de motion transfer / animación de personaje para aplicar los movimientos del video de referencia al personaje generado.`,
+    `4. Conserva o reemplaza el audio original con la música de ${config.danza} deseada (ritmo ${musica}).`,
+    `5. Ajusta la sincronización si es necesario (algunas herramientas permiten alinear el beat).`,
+    `6. Exporta en la relación de aspecto ${aspecto} y revisa que los rostros y vestimenta se mantengan consistentes.`,
+    `Consejo: para mejor resultado, el video de referencia debe tener movimientos claros y el personaje generado debe tener buena calidad de rostro y cuerpo.`
+  ].join('\n')
+
   return {
     promptImagenReferencia,
     promptVideo,
     promptVideoCorto,
+    instruccionesAnimacion,
     parametrosSugeridos: {
       duracion: `${config.duracionSegundos}s`,
       estilo: config.estiloVisual,
       relacionAspecto: aspecto,
       personajes: config.numeroPersonajes === 1 ? '1 personaje' : '2 personajes (pareja)'
     },
-    instruccionesUso: '1) Copia el prompt de imagen y genérala en Grok Imagine (modo imagen). 2) Usa esa imagen como referencia. 3) Copia el prompt de video y genéralo en modo video. Ajusta duración y relación de aspecto si es necesario.'
+    instruccionesUso: '1) Genera la imagen de referencia en Grok Imagine. 2) Genera el video usando esa imagen. 3) Usa Viggle (u otra herramienta) para transferir movimiento de un video de baile real y sincronizar con la música.'
   }
 }
 
@@ -116,8 +129,9 @@ export async function generarVideo(config: VideoPromptConfig) {
     promptImagen: prompt.promptImagenReferencia,
     promptVideo: prompt.promptVideo,
     promptCorto: prompt.promptVideoCorto,
+    instruccionesAnimacion: prompt.instruccionesAnimacion,
     duracion: config.duracionSegundos,
-    formato: 'Grok_Imagine',
+    formato: 'Grok_Imagine + animación',
     personajes: prompt.parametrosSugeridos.personajes,
     instrucciones: prompt.instruccionesUso
   }
